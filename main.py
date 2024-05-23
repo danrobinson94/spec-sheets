@@ -23,14 +23,11 @@ async def process(pdf_file: UploadFile = File(...)):
     try:
         # Save the uploaded file temporarily
         filename = pdf_file.filename
-        print(filename)
         contents = await pdf_file.read()
-        with open(f"{filename}", "wb") as buffer:
-            buffer.write(pdf_file.file_content)
-
         regex_pattern = r'^.*warranty.*$'
+        processed_text = extract_specifications_from_pdf(contents, regex_pattern)
+
         # Process the PDF using the separate function
-        processed_text = extract_specifications_from_pdf(open(filename, "rb").read(), regex_pattern)
 
         # Clean up the temporary file
         os.remove(filename)

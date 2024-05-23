@@ -1,27 +1,13 @@
-import fitz  # PyMuPDF
+import pymupdf
 import requests
 import re
  
 
-def extract_specifications_from_pdf(pdf_file, regex_pattern):
-
-    """
-
-    Extracts data based on a regex pattern from a given PDF file.
-
- 
-
-    :param pdf_path: Path to the PDF file.
-
-    :param regex_pattern: Regular expression pattern to match the specifications.
-
-    :return: A list of all matched specifications.
-
-    """
+def extract_specifications_from_pdf(contents: bytes, regex_pattern: str) -> str:
 
     # Open the PDF file
 
-    doc = fitz.open(pdf_path)
+    doc = pymupdf.open(data=contents)
 
     text = ""
 
