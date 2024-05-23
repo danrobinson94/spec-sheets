@@ -73,5 +73,6 @@ async def process(search_terms: list[str], pdf_file: UploadFile = File(...) ):
         return {"error": str(e)}
 
 if __name__ == '__main__':
+    port = int(getenv("PORT", 8000))
     import uvicorn
-    uvicorn.run(app)
+    uvicorn.run(app, host="0.0.0.0", port=port, reload=True)
