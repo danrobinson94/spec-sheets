@@ -1,10 +1,12 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from os import getenv
 import os
 import io
 import re
 import pymupdf
 import fitz
+import uvicorn
 from routes.processPdf import extract_specifications_from_pdf
 
 app = FastAPI()
@@ -25,7 +27,7 @@ async def root():
     return {"message": "Hello World"}
 
 @app.post("/process")
-async def process(pdf_file: UploadFile = File(...)):
+async def process(search_terms: list[str], pdf_file: UploadFile = File(...) ):
     """Uploads and processes a PDF file.
 
     Args:
@@ -36,8 +38,9 @@ async def process(pdf_file: UploadFile = File(...)):
     """
     try:
         # Save the uploaded file temporarily
-        filename = pdf_file.filename
+        # filename = pdf_file.filename
         file_content = await pdf_file.read()
+        search_terms = search_terms[0].split(',')
     
     # Open the PDF from bytes using PyMuPDF
         pdf_document = pymupdf.open(stream=file_content, filetype="pdf")
@@ -57,14 +60,18 @@ async def process(pdf_file: UploadFile = File(...)):
         paragraphs = re.findall(regex_pattern, all_text, re.DOTALL)
         
         # Filter paragraphs containing the word "warranty"
-        warranty_paragraphs = [para for para in paragraphs if re.search(r'cummins', para, re.IGNORECASE)]
+        paragraphs2 = []
+        for search_string in search_terms:
+            # pattern = rf"{search_string}"
+            answer = [para for para in paragraphs if re.search(search_string, para, re.IGNORECASE)]
+            paragraphs2.append(answer)
 
-        print(warranty_paragraphs)
+        print(paragraphs2)
 
-        return {"result": warranty_paragraphs}
+        return {"result": paragraphs2}
     except Exception as e:
         return {"error": str(e)}
 
 if __name__ == '__main__':
-    import uvicorn
+    port = int(getenv("PORT", 8000))
     uvicorn.run(app)
