@@ -7,7 +7,12 @@ def extract_specifications_from_pdf(contents: bytes, regex_pattern: str) -> str:
 
     # Open the PDF file
 
-    doc = pymupdf.open(data=contents)
+    with pymupdf.open(contents) as doc:
+        # You can access the PDF content here
+        # For example, get the number of pages:
+        num_pages = len(doc)
+
+    # doc = pymupdf.open(memoryview(contents))
 
     text = ""
 
