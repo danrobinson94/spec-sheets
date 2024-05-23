@@ -11,7 +11,7 @@ from routes.processPdf import extract_specifications_from_pdf
 
 app = FastAPI()
 
-frontend_url = os.environ.get("FRONTEND_PATH")
+frontend_url = os.environ.get("FRONTEND_PATH", 'http://localhost:3000')
 
 # Configure CORS
 app.add_middleware(
@@ -73,6 +73,5 @@ async def process(search_terms: list[str], pdf_file: UploadFile = File(...) ):
         return {"error": str(e)}
 
 if __name__ == '__main__':
-    port = int(getenv("PORT", 8000))
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(app)
