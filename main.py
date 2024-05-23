@@ -20,7 +20,6 @@ async def root():
 
 @app.post("/process")
 async def process(pdf_file: UploadFile = File(...)):
-    print('STARTING')
     """Uploads and processes a PDF file.
 
     Args:
@@ -44,3 +43,7 @@ async def process(pdf_file: UploadFile = File(...)):
         return {"result": processed_text}
     except Exception as e:
         return {"error": str(e)}
+
+if __name__ == '__main__':
+    import uvicorn
+    uvicorn.run(app)
