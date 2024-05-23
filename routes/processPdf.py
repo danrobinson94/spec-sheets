@@ -3,7 +3,7 @@ import requests
 import re
  
 
-def extract_specifications_from_pdf(pdf_path, regex_pattern):
+def extract_specifications_from_pdf(pdf_file, regex_pattern):
 
     """
 
@@ -62,14 +62,14 @@ def extract_specifications_from_pdf(pdf_path, regex_pattern):
 
 # Example usage
 #"263213generators.pdf"
-pdf_path = "16815generator.pdf"
+# pdf_path = "16815generator.pdf"
 
-# Define your regex pattern here. Example pattern for matching something like a model number "Model XYZ1234"
+# # Define your regex pattern here. Example pattern for matching something like a model number "Model XYZ1234"
 
-regex_pattern = r'^.*warranty.*$'
+# regex_pattern = r'^.*warranty.*$'
 
-matches = extract_specifications_from_pdf(pdf_path, regex_pattern)
+# matches = extract_specifications_from_pdf(pdf_path, regex_pattern)
 
  
 
-print("Found specifications:", matches) # type: ignore
+# print("Found specifications:", matches) # type: ignore
