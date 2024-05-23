@@ -64,7 +64,7 @@ async def process(search_terms: list[str], pdf_file: UploadFile = File(...) ):
         for search_string in search_terms:
             # pattern = rf"{search_string}"
             answer = [para for para in paragraphs if re.search(search_string, para, re.IGNORECASE)]
-            paragraphs2.append(answer)
+            paragraphs2.append({search_string: answer})
 
         print(paragraphs2)
 
@@ -74,4 +74,5 @@ async def process(search_terms: list[str], pdf_file: UploadFile = File(...) ):
 
 if __name__ == '__main__':
     port = int(getenv("PORT", 8000))
-    uvicorn.run(app)
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=port)
