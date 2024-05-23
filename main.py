@@ -1,6 +1,9 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 import os
+import io
+import pymupdf
+import fitz
 from routes.processPdf import extract_specifications_from_pdf
 
 app = FastAPI()
@@ -33,16 +36,24 @@ async def process(pdf_file: UploadFile = File(...)):
     try:
         # Save the uploaded file temporarily
         filename = pdf_file.filename
-        contents = await pdf_file.read()
-        regex_pattern = r'^.*warranty.*$'
-        processed_text = extract_specifications_from_pdf(contents, regex_pattern)
+        # contents = await pdf_file.read()
+        file_content = await pdf_file.read()
+    
+    # Open the PDF from bytes using PyMuPDF
+        pdf_document = pymupdf.open(stream=file_content, filetype="pdf")
+        
+        # Process the PDF as needed
+        # For example, extracting text from the first page
+        first_page = pdf_document[0]
+        text = first_page.get_text("text")
+        # processed_text = extract_specifications_from_pdf(contents, regex_pattern)
 
         # Process the PDF using the separate function
 
         # Clean up the temporary file
         os.remove(filename)
 
-        return {"result": processed_text}
+        return {"result": text}
     except Exception as e:
         return {"error": str(e)}
 
