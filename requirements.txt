@@ -2,3 +2,5 @@ fastapi==0.111.0
 uvicorn==0.29.0
 pymupdf==1.24.4
 fastapi-cors==0.0.6
+python-multipart==0.0.9
+requests==2.31.0
