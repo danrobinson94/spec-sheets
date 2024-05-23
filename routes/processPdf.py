@@ -4,6 +4,7 @@ import re
  
 
 def extract_specifications_from_pdf(pdf_file, regex_pattern):
+    print('PDF', pdf_file)
 
     """
 
