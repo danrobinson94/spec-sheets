@@ -1,17 +1,26 @@
 from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 import os
 from routes.processPdf import extract_specifications_from_pdf
 
 app = FastAPI()
 
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Allow your frontend domain
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 async def root():
-
     return {"message": "Hello World"}
 
 @app.post("/process")
 async def process(pdf_file: UploadFile = File(...)):
+    print('STARTING')
     """Uploads and processes a PDF file.
 
     Args:
@@ -35,4 +44,3 @@ async def process(pdf_file: UploadFile = File(...)):
         return {"result": processed_text}
     except Exception as e:
         return {"error": str(e)}
-
