@@ -62,5 +62,5 @@ def extract_specifications_from_pdf(contents: bytes, regex_pattern: str) -> str:
 # matches = extract_specifications_from_pdf(pdf_path, regex_pattern)
 
  
-
+#
 # print("Found specifications:", matches) # type: ignore
