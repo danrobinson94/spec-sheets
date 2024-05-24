@@ -28,12 +28,39 @@ async def process(search_terms: list[str], pdf_file: UploadFile = File(...)):
         search_terms = search_terms[0].split(',')
 
         pdf_document = pymupdf.open(stream=file_content, filetype="pdf")
+        pdf_blocks = []
         all_text = ""
         for page_num in range(len(pdf_document)):
             page = pdf_document[page_num]
+            pdf_blocks.extend(page.get_text("blocks"))
             all_text += page.get_text("text")
 
+        output_list = []
+
+        for item in pdf_blocks:
+            text = item[4].strip()  # Get the text part of the tuple
+
+            # Check if the text starts with relevant sections or is a subsection (1.1-X or A. to Z.)
+            if (
+                text.startswith('PART') or 
+                text.startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.')) or 
+                (len(text) > 1 and text[0].isalpha() and text[1] == '.')
+            ):
+                # Additional filtering to exclude unwanted texts
+                if not any(keyword in text for keyword in ['STANDBY', 'GENERATOR', '432.07.100', '02/2024']):
+                    output_list.append(text)
+
+        print(output_list)
+
         regex_pattern = r'(\d+\.\d+.*?)(?=\n\d+\.\d+|\Z)'
+        section_pattern = r'(\d+\.\d+.*?)(?=\n\d+\.\d+|\n[A-Z]\.|$)'
+        sub_section_pattern = r'([A-Z]\..*?)(?=\n[A-Z]\.|$)'
+        sections = re.findall(section_pattern, all_text, re.DOTALL)
+
+        sub_sections = []
+        for sub_section in sections:
+            sub_sections.append(re.findall(sub_section_pattern, sub_section, re.DOTALL))
+
         paragraphs = re.findall(regex_pattern, all_text, re.DOTALL)
         
         paragraphs2 = []
