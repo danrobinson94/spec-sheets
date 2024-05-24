@@ -1,28 +1,8 @@
-from fastapi import FastAPI, File, UploadFile
-from fastapi.middleware.cors import CORSMiddleware
-import os
 import re
 import pymupdf
-import uvicorn
+from fastapi import UploadFile
 
-app = FastAPI()
-
-frontend_url = os.environ.get("FRONTEND_PATH", 'http://localhost:3000')
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[frontend_url],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-@app.post("/process")
-async def process(search_terms: list[str], pdf_file: UploadFile = File(...)):
+async def process_pdf(search_terms: list[str], pdf_file: UploadFile):
     try:
         file_content = await pdf_file.read()
         search_terms = search_terms[0].split(',')
@@ -40,17 +20,13 @@ async def process(search_terms: list[str], pdf_file: UploadFile = File(...)):
         for item in pdf_blocks:
             text = item[4].strip()  # Get the text part of the tuple
 
-            # Check if the text starts with relevant sections or is a subsection (1.1-X or A. to Z.)
             if (
                 text.startswith('PART') or 
                 text.startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.')) or 
                 (len(text) > 1 and text[0].isalpha() and text[1] == '.')
             ):
-                # Additional filtering to exclude unwanted texts
                 if not any(keyword in text for keyword in ['STANDBY', 'GENERATOR', '432.07.100', '02/2024']):
                     output_list.append(text)
-
-        print(output_list)
 
         regex_pattern = r'(\d+\.\d+.*?)(?=\n\d+\.\d+|\Z)'
         section_pattern = r'(\d+\.\d+.*?)(?=\n\d+\.\d+|\n[A-Z]\.|$)'
@@ -71,7 +47,3 @@ async def process(search_terms: list[str], pdf_file: UploadFile = File(...)):
         return {"result": paragraphs2}
     except Exception as e:
         return {"error": str(e)}
-
-if __name__ == '__main__':
-    port = int(os.getenv("PORT", 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port, reload=True)
