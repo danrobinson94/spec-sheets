@@ -14,21 +14,32 @@ async def process_pdf(search_terms: list[str], pdf_file: UploadFile):
             pdf_blocks.extend(page.get_text("blocks"))
 
         output_list = []
+        current_section = []
 
         for item in pdf_blocks:
             text = item[4].strip()  # Get the text part of the tuple
+            # output_list.append((current_section, text))
+            section_value = re.split(r'[\s\n]+', text)[0]
+            length = len(current_section)
+            if section_value.startswith("PART"):
+                current_section = []
+                current_section.append(section_value + " " + re.split(r'[\s\n]+', text)[1])
+            elif length == 0:
+                continue
+            elif re.match(r'^\d+', section_value) and re.match(r'^\d', current_section[length-1]):
+                current_section = current_section[:length-1]
+                current_section.append(section_value)
+            elif re.match(r'^[A-Za-z]', section_value) and re.match(r'^[A-Za-z]', current_section[length-1]):
+                current_section = current_section[:length-1]
+                current_section.append(section_value)
+            
+            else:
+                current_section.append(section_value)
 
-            if (
-                text.startswith('PART') or 
-                text.startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.')) or 
-                (len(text) > 1 and text[0].isalpha() and text[1] == '.')
-            ):
-                if not any(keyword in text for keyword in ['STANDBY', 'GENERATOR', '432.07.100', '02/2024']):
-                    output_list.append(text)
-        
+            print(current_section)
         paragraphs = []
         for search_string in search_terms:
-            answer = [para for para in output_list if re.search(search_string, para, re.IGNORECASE)]
+            answer = [ {"section": section, "text": para} for section, para in output_list if re.search(search_string, para, re.IGNORECASE)]
             paragraphs.append({search_string: answer})
 
         return {"result": paragraphs}
