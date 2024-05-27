@@ -9,39 +9,42 @@ async def process_pdf(search_terms: list[str], pdf_file: UploadFile):
 
         pdf_document = pymupdf.open(stream=file_content, filetype="pdf")
         pdf_blocks = []
+        all_text = ""
         for page_num in range(len(pdf_document)):
             page = pdf_document[page_num]
             pdf_blocks.extend(page.get_text("blocks"))
+            all_text += page.get_text("text")
 
-        output_list = []
-        current_section = []
+        # output_list = []
 
-        for item in pdf_blocks:
-            text = item[4].strip()  # Get the text part of the tuple
-            # output_list.append((current_section, text))
-            section_value = re.split(r'[\s\n]+', text)[0]
-            length = len(current_section)
-            if section_value.startswith("PART"):
-                current_section = []
-                current_section.append(section_value + " " + re.split(r'[\s\n]+', text)[1])
-            elif length == 0:
-                continue
-            elif re.match(r'^\d+', section_value) and re.match(r'^\d', current_section[length-1]):
-                current_section = current_section[:length-1]
-                current_section.append(section_value)
-            elif re.match(r'^[A-Za-z]', section_value) and re.match(r'^[A-Za-z]', current_section[length-1]):
-                current_section = current_section[:length-1]
-                current_section.append(section_value)
-            
-            else:
-                current_section.append(section_value)
+        # for item in pdf_blocks:
+        #     text = item[4].strip()  # Get the text part of the tuple
 
-            print(current_section)
-        paragraphs = []
+        #     if (
+        #         text.startswith('PART') or 
+        #         text.startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.')) or 
+        #         (len(text) > 1 and text[0].isalpha() and text[1] == '.')
+        #     ):
+        #         if not any(keyword in text for keyword in ['STANDBY', 'GENERATOR', '432.07.100', '02/2024']):
+        #             output_list.append(text)
+
+        regex_pattern = r'(\d+\.\d+.*?)(?=\n\d+\.\d+|\Z)'
+        # section_pattern = r'(\d+\.\d+.*?)(?=\n\d+\.\d+|\n[A-Z]\.|$)'
+        # sub_section_pattern = r'([A-Z]\..*?)(?=\n[A-Z]\.|$)'
+        # sections = re.findall(section_pattern, all_text, re.DOTALL)
+
+        # sub_sections = []
+        # for sub_section in sections:
+        #     sub_sections.append(re.findall(sub_section_pattern, sub_section, re.DOTALL))
+
+        paragraphs = re.findall(regex_pattern, all_text, re.DOTALL)
+        
+        paragraphs2 = []
         for search_string in search_terms:
-            answer = [ {"section": section, "text": para} for section, para in output_list if re.search(search_string, para, re.IGNORECASE)]
-            paragraphs.append({search_string: answer})
+            print('SEARCH', search_string)
+            answer = [para for para in paragraphs if re.search(search_string, para, re.IGNORECASE)]
+            paragraphs2.append({search_string: answer})
 
-        return {"result": paragraphs}
+        return {"result": paragraphs2}
     except Exception as e:
         return {"error": str(e)}
