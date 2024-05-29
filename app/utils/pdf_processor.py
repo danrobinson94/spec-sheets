@@ -15,6 +15,90 @@ async def process_pdf(search_terms: list[str], pdf_file: UploadFile):
             pdf_blocks.extend(page.get_text("blocks"))
             all_text += page.get_text("text")
 
+        def parse_pdf_array(pdf_array):
+            structure = []
+            index = 0
+            length = len(pdf_array)
+            
+            def parse_section(path):
+                nonlocal index
+                current_path = path.copy()
+                while index < length:
+                    pdf_line = pdf_array[index]
+                    text = pdf_line[4]
+                    x1_position = pdf_line[0]
+                    part_match = re.match(r'PART\s+(\d+)(.*)', text) # PART 1 2 3 etc...
+                    frac_number_dot_match = re.match(r'(\d+\.\d+)(.*)', text) # 1.1 1.2 2.1 2.2 etc...
+                    frac_number_paren_match = re.match(r'(\d+\.\d+)\)(.*)') # 1.1) 1.2) 2.1) 2.2) etc...
+                    whole_number_dot_match = re.match(r'(\d+)\.(.*)', text) # 1. 2. 3. etc...
+                    whole_number_paren_match = re.match(r'(\d+)\)(.*)', text) # 1) 2) 3) etc... 
+                    letter_dot_match = re.match(r'([A-Za-z])\.(.*)', text) # A. B. C. a. b. c. etc...
+                    letter_paren_match = re.match(r'([A-Za-z])\)(.*)', text) # A) B) C) a) b) c) etc...
+                    # Roman Numerals???
+
+                    # If x1_position is equal and the match is true --> Pop once and replace with current value (Part 1, 1.1) --> (Part 1, 1.2)
+                    # If x1_position is equal and the match is false --> I think this is an error?
+                    # If x1_position is less and the match is true --> I also think this is an error?
+                    # If x1_position is less and the match is false --> Pop twice and replace with current value (Part 1, 1.1) --> (Part 2)
+                    
+                    if part_match:
+                        if current_path:
+                            return
+                        current_path = [f"PART {part_match.group(1)} {part_match.group(2)}"]
+                        structure.append((current_path, text))
+                        index += 1
+                        parse_section(current_path)
+                    elif section_match and current_path:
+                        if len(current_path) > 1 and not current_path[-1].isdigit():
+                            return
+                        current_path = path + [section_match.group(1)]
+                        structure.append((current_path, text))
+                        index += 1
+                        parse_section(current_path)
+                    elif subsection_match and current_path:
+                        if len(current_path) > 2 and current_path[-1].isalpha():
+                            return
+                        current_path = path + [subsection_match.group(1)]
+                        structure.append((current_path, text))
+                        index += 1
+                        parse_section(current_path)
+                    elif subsubsection_match and current_path:
+                        if len(current_path) > 3 and current_path[-1].isdigit():
+                            return
+                        current_path = path + [subsubsection_match.group(1)]
+                        structure.append((current_path, text))
+                        index += 1
+                        parse_section(current_path)
+                    else:
+                        if current_path:
+                            structure.append((current_path, text))
+                        index += 1
+
+            parse_section([])
+            return structure
+
+        # Parse the PDF array
+        pdf_structure = parse_pdf_array(pdf_blocks)
+
+        # Print the structured array
+        for item in pdf_structure:
+            print(item)
+
+        def search_structure(structure, keyword):
+            results = []
+            for path, text in structure:
+                if keyword.lower() in text.lower():
+                    results.append(path)
+            return results
+
+        # Search for the keyword
+        keyword = "cummins"
+        search_results = search_structure(pdf_structure, keyword)
+
+        # Print the results
+        for result in search_results:
+            print(result)
+
         # output_list = []
 
         # for item in pdf_blocks:
