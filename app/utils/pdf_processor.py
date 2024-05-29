@@ -36,10 +36,12 @@ async def process_pdf(search_terms: list[str], pdf_file: UploadFile):
                     letter_paren_match = re.match(r'([A-Za-z])\)(.*)', text) # A) B) C) a) b) c) etc...
                     # Roman Numerals???
 
-                    # If x1_position is equal and the match is true --> Pop once and replace with current value (Part 1, 1.1) --> (Part 1, 1.2)
+                    # If x1_position is equal and the match is true --> Bubble Up and add current value (Part 1, 1.1) --> (Part 1, 1.2)
                     # If x1_position is equal and the match is false --> I think this is an error?
                     # If x1_position is less and the match is true --> I also think this is an error?
-                    # If x1_position is less and the match is false --> Pop twice and replace with current value (Part 1, 1.1) --> (Part 2)
+                    # If x1_position is less and the match is false --> Bubble Up twice and replace with current value (Part 1, 1.1) --> (Part 2)
+                    # If x1_position is more and the match is true --> I also think this is an error?
+                    # If x1_position is more and the match is false --> Bubble Down and add current value (Part 1) --> (Part 1, 1.1)
                     
                     if part_match:
                         if current_path:
