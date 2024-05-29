@@ -29,6 +29,9 @@ async def process_pdf(search_terms: list[str], pdf_file: UploadFile):
         #             output_list.append(text)
 
         regex_pattern = r'(\d+\.\d+.*?)(?=\n\d+\.\d+|\Z)'
+        # will this need to be updated for sections?
+
+        
         # section_pattern = r'(\d+\.\d+.*?)(?=\n\d+\.\d+|\n[A-Z]\.|$)'
         # sub_section_pattern = r'([A-Z]\..*?)(?=\n[A-Z]\.|$)'
         # sections = re.findall(section_pattern, all_text, re.DOTALL)
