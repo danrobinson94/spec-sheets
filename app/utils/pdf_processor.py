@@ -8,12 +8,13 @@ async def process_pdf(search_terms: list[str], pdf_file: UploadFile):
         search_terms = search_terms[0].split(',')
 
         pdf_document = pymupdf.open(stream=file_content, filetype="pdf")
+        # pdf_blocks will store each individual line of text in the pdf
         pdf_blocks = []
-        all_text = ""
+        # all_text = ""
         for page_num in range(len(pdf_document)):
             page = pdf_document[page_num]
             pdf_blocks.extend(page.get_text("blocks"))
-            all_text += page.get_text("text")
+            # all_text += page.get_text("text")
 
         def parse_pdf_array(pdf_array):
             structure = []
