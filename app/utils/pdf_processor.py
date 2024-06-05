@@ -1,5 +1,6 @@
 import re
 import pymupdf
+import json
 from fastapi import UploadFile
 
 async def process_pdf(search_terms: list[str], pdf_file: UploadFile):
@@ -78,9 +79,9 @@ async def process_pdf(search_terms: list[str], pdf_file: UploadFile):
             if search_term_array:
                 result_arrays.append({search_term: search_term_array})
             print('RESULTS ARRAY', result_arrays)
-
+        final_array = json.dumps(result_arrays)
 # Print the arrays containing the word 'warranty'
-        print('RESULT', result_arrays)
-        return {"result": result_arrays}
+        print('RESULT', final_array)
+        return {"result": final_array}
     except Exception as e:
         return {"error": str(e)}
