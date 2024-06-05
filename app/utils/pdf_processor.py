@@ -54,7 +54,30 @@ async def process_pdf(search_terms: list[str], pdf_file: UploadFile):
                 break
 
         pdf_layout_with_ref = [[" -> ".join([ref.strip() for ref in string[0]]), string[1]] for string in pdf_layout]
+        result_arrays = []
 
-        return {"result": pdf_layout_with_ref}
+# Iterate through each array in the data
+        for search_term in search_terms:
+            search_term_array = []
+            
+            # Iterate through each array in the data
+            for array in pdf_layout_with_ref:
+                # Check if the second element contains the search term
+                if search_term in array[1].lower():
+                    # Create a dictionary with 'header' and 'value' keys
+                    term_dict = {
+                        'header': array[0],
+                        'value': array[1]
+                    }
+                    # Append the dictionary to the search_term_array list
+                    search_term_array.append(term_dict)
+            
+            # Only append the search_term_array if it contains at least one term_dict
+            if search_term_array:
+                result_arrays.append({search_term: search_term_array})
+
+# Print the arrays containing the word 'warranty'
+        print('RESULT', result_arrays)
+        return {"result": result_arrays}
     except Exception as e:
         return {"error": str(e)}
