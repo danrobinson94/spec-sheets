@@ -1,6 +1,5 @@
 import re
 import pymupdf
-import json
 from fastapi import UploadFile
 
 async def process_pdf(search_terms: list[str], pdf_file: UploadFile):
@@ -9,79 +8,46 @@ async def process_pdf(search_terms: list[str], pdf_file: UploadFile):
         search_terms = search_terms[0].split(',')
 
         pdf_document = pymupdf.open(stream=file_content, filetype="pdf")
-        text = ""
+        pdf_blocks = []
+        all_text = ""
         for page_num in range(len(pdf_document)):
             page = pdf_document[page_num]
-            text += page.get_text("text")
+            pdf_blocks.extend(page.get_text("blocks"))
+            all_text += page.get_text("text")
 
-        lvl_1 = r'\nPART\s+\d+\s' # PART 1 2 3 etc... 
-        lvl_2 = r'\n\d+\.\d+\s+' # 1.1 1.2 2.1 2.2 etc...
-        lvl_3 = r'\n[A-Z]\.\s+' # A. B. C. etc...
-        lvl_4 = r'\n\d+\.\s+' # 1. 2. 3. etc...
-        lvl_5 = r'\n[a-z]\.\s+' # a. b. c. etc...
-        lvl_6 = r'\n\d+\)\s+' # 1) 2) 3) etc...
-        lvl_7 = r'\n[a-z]\)\s+' # a) b) c) etc...
-        lvls = [lvl_1, lvl_2, lvl_3, lvl_4, lvl_5, lvl_6, lvl_7]
-        pattern_match = r'|'.join(lvls)
+        # output_list = []
 
-        pdf_layout = []
-        reference = []
-        ref_layout = {}
-        ref_depth = 0
-        while text:
-            matches = re.findall(pattern_match, text)
-            if len(matches) != 0:
-                next_match = matches[0]
-                #TODO: Watch for when the lvls are skipped
-                #TODO: Still needs some fixes for typos and stuff
-                for lvl in lvls:
-                    if re.match(lvl, next_match):
-                        next_match_lvl = lvls.index(lvl)
-                        split_text = re.split(lvl, text, maxsplit=1)
-                        pdf_layout.append([reference.copy(), split_text[0]])
-                        text = next_match.join(split_text[1:])
-                        ref_lvl = len(reference) - 1
-                        while ref_lvl >= 0:
-                            if next_match_lvl <= ref_lvl:
-                                reference.pop()
-                                ref_depth -= 1
-                            ref_lvl -= 1
-                        reference.append(next_match)
-                        ref_depth += 1
-                        ref_layout[next_match] = ref_depth
-                        break
-            else:
-                pdf_layout.append([reference.copy(), text])
-                break
+        # for item in pdf_blocks:
+        #     text = item[4].strip()  # Get the text part of the tuple
 
-        pdf_layout_with_ref = [[" -> ".join([ref.strip() for ref in string[0]]), string[1]] for string in pdf_layout]
-        result_arrays = []
+        #     if (
+        #         text.startswith('PART') or 
+        #         text.startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.')) or 
+        #         (len(text) > 1 and text[0].isalpha() and text[1] == '.')
+        #     ):
+        #         if not any(keyword in text for keyword in ['STANDBY', 'GENERATOR', '432.07.100', '02/2024']):
+        #             output_list.append(text)
 
-# Iterate through each array in the data
-        for search_term in search_terms:
-            search_term_array = []
-            
-            # Iterate through each array in the data
-            for array in pdf_layout_with_ref:
-                # Check if the second element contains the search term
-                if search_term in array[1].lower():
-                    # Create a dictionary with 'header' and 'value' keys
-                    term_dict = {
-                        'term_header': array[0],
-                        'term_value': array[1]
-                    }
-                    # Append the dictionary to the search_term_array list
-                    print('TERM DICT', term_dict)
-                    search_term_array.append(term_dict)
-                    print('SEARCH TERM ARRAY', search_term_array)
-            
-            # Only append the search_term_array if it contains at least one term_dict
-            if search_term_array:
-                result_arrays.append({search_term: search_term_array})
-            print('RESULTS ARRAY', result_arrays)
-        final_array = json.dumps(result_arrays)
-# Print the arrays containing the word 'warranty'
-        print('RESULT', final_array)
-        return {"result": final_array}
+        regex_pattern = r'(\d+\.\d+.*?)(?=\n\d+\.\d+|\Z)'
+        # will this need to be updated for sections?
+
+        
+        # section_pattern = r'(\d+\.\d+.*?)(?=\n\d+\.\d+|\n[A-Z]\.|$)'
+        # sub_section_pattern = r'([A-Z]\..*?)(?=\n[A-Z]\.|$)'
+        # sections = re.findall(section_pattern, all_text, re.DOTALL)
+
+        # sub_sections = []
+        # for sub_section in sections:
+        #     sub_sections.append(re.findall(sub_section_pattern, sub_section, re.DOTALL))
+
+        paragraphs = re.findall(regex_pattern, all_text, re.DOTALL)
+        
+        paragraphs2 = []
+        for search_string in search_terms:
+            print('SEARCH', search_string)
+            answer = [para for para in paragraphs if re.search(search_string, para, re.IGNORECASE)]
+            paragraphs2.append({search_string: answer})
+
+        return {"result": paragraphs2}
     except Exception as e:
         return {"error": str(e)}
