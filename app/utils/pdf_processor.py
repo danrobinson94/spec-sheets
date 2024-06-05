@@ -70,11 +70,14 @@ async def process_pdf(search_terms: list[str], pdf_file: UploadFile):
                         'term_value': array[1]
                     }
                     # Append the dictionary to the search_term_array list
+                    print('TERM DICT', term_dict)
                     search_term_array.append(term_dict)
+                    print('SEARCH TERM ARRAY', search_term_array)
             
             # Only append the search_term_array if it contains at least one term_dict
             if search_term_array:
                 result_arrays.append({search_term: search_term_array})
+            print('RESULTS ARRAY', result_arrays)
 
 # Print the arrays containing the word 'warranty'
         print('RESULT', result_arrays)
