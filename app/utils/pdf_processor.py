@@ -66,8 +66,8 @@ async def process_pdf(search_terms: list[str], pdf_file: UploadFile):
                 if search_term in array[1].lower():
                     # Create a dictionary with 'header' and 'value' keys
                     term_dict = {
-                        'header': array[0],
-                        'value': array[1]
+                        'term_header': array[0],
+                        'term_value': array[1]
                     }
                     # Append the dictionary to the search_term_array list
                     search_term_array.append(term_dict)
