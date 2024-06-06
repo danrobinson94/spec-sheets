@@ -55,6 +55,6 @@ async def process_pdf(pdf_file: UploadFile):
 
         pdf_layout_with_ref = [[" -> ".join([ref.strip() for ref in string[0]]), string[1]] for string in pdf_layout]
         
-        return {"Result": pdf_layout_with_ref}
+        return pdf_layout_with_ref
     except Exception as e:
         return {"error": str(e)}
