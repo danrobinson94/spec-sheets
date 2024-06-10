@@ -27,6 +27,7 @@ async def process_pdf(pdf_file: UploadFile):
         reference = []
         ref_layout = {}
         ref_depth = 0
+        prev_match = ""
         while text:
             matches = re.findall(pattern_match, text)
             if len(matches) != 0:
@@ -37,7 +38,10 @@ async def process_pdf(pdf_file: UploadFile):
                     if re.match(lvl, next_match):
                         next_match_lvl = lvls.index(lvl)
                         split_text = re.split(lvl, text, maxsplit=1)
+                        reference.append(prev_match)
                         pdf_layout.append([reference.copy(), split_text[0]])
+                        reference.pop()
+                        reference.append(prev_match + split_text[0])
                         text = next_match.join(split_text[1:])
                         ref_lvl = len(reference) - 1
                         while ref_lvl >= 0:
@@ -45,15 +49,15 @@ async def process_pdf(pdf_file: UploadFile):
                                 reference.pop()
                                 ref_depth -= 1
                             ref_lvl -= 1
-                        reference.append(next_match)
                         ref_depth += 1
                         ref_layout[next_match] = ref_depth
+                        prev_match = next_match
                         break
             else:
                 pdf_layout.append([reference.copy(), text])
                 break
 
-        pdf_layout_with_ref = [[" -> ".join([ref.strip() for ref in string[0]]), string[1]] for string in pdf_layout]
+        pdf_layout_with_ref = [[" ->\n".join([ref.strip() for ref in string[0]]), string[1]] for string in pdf_layout]
         
         return pdf_layout_with_ref
     except Exception as e:
