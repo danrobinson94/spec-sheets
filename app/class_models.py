@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class QAs(BaseModel):
     question: str
@@ -12,9 +13,11 @@ class PDFBlocks(BaseModel):
 class SearchTermInput(BaseModel):
     title: str
     keywords: list[str]
-    questions: list[str]
+    subSearchTerms: Optional[list['SearchTermInput']] = []
 
 class SearchTermOutput(BaseModel):
     title: str
     keywords: list[str]
     pdf_blocks: list[PDFBlocks]
+
+SearchTermInput.model_rebuild()

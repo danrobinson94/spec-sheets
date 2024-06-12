@@ -39,7 +39,7 @@ async def process_pdf(pdf_file: UploadFile):
                         next_match_lvl = lvls.index(lvl)
                         split_text = re.split(lvl, text, maxsplit=1)
                         reference.append(prev_match)
-                        pdf_layout.append([reference.copy(), split_text[0]])
+                        pdf_layout.append([reference.copy(), split_text[0], ref_depth])
                         reference.pop()
                         reference.append(prev_match + split_text[0])
                         text = next_match.join(split_text[1:])
@@ -54,10 +54,10 @@ async def process_pdf(pdf_file: UploadFile):
                         prev_match = next_match
                         break
             else:
-                pdf_layout.append([reference.copy(), text])
+                pdf_layout.append([reference.copy(), text, ref_depth])
                 break
 
-        pdf_layout_with_ref = [[" ->\n".join([ref.strip() for ref in string[0]]), string[1]] for string in pdf_layout]
+        pdf_layout_with_ref = [[" ->\n".join([ref.strip() for ref in string[0]]), string[1], string[2]] for string in pdf_layout]
         
         return pdf_layout_with_ref
     except Exception as e:
