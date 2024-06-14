@@ -9,12 +9,12 @@ async def process_sub_search_terms(search_term: SearchTermInput, pdf_with_ref, d
             # Check if the second element contains the search term
             if depth == array[2]:
                 return pdf_blocks
-            if any(term in array[1].lower() for term in search_term.keywords):
+            if any(term in array[2].lower() for term in search_term.keywords):
                 # Create a dictionary with 'header' and 'value' keys
                 term_dict = {
                     'title': search_term.title,
                     'reference': array[0],
-                    'value': array[1]
+                    'value': array[2]
                 }
                 # Append the dictionary to the search_term_array list
                 pdf_blocks.append(term_dict)
