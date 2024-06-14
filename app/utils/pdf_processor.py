@@ -16,7 +16,7 @@ def extract_text_with_coords(doc):
                     for span in line["spans"]:
                         span_texts.append(span["text"])
                         x0, y0, x1, y1 = span["bbox"]
-                        text_with_coords.append((span["text"], page_num, (x0, y0, x1, y1)))
+                        text_with_coords.append((span["text"].strip(), page_num, (x0, y0, x1, y1)))
                     
     return text_with_coords
 
@@ -29,7 +29,7 @@ def clean_text_with_coords(text_with_cords):
         next_ref = text_with_cords[i + 1]
         if abs(ref[2][1] - next_ref[2][1]) < 10:
             new_coord = (ref[2][0], ref[2][1], next_ref[2][2], next_ref[2][3])
-            new_string = ref[0] + next_ref[0]
+            new_string = ref[0] + " " + next_ref[0]
             text_with_cords[i] = (new_string, ref[1], new_coord)
             del text_with_cords[i+1]
         else:
