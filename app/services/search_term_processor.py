@@ -14,7 +14,8 @@ async def process_sub_search_terms(search_term: SearchTermInput, pdf_with_ref, d
                 term_dict = {
                     'title': search_term.title,
                     'reference': array[0],
-                    'value': array[2]
+                    'value': array[2],
+                    'page_num': array[4]
                 }
                 # Append the dictionary to the search_term_array list
                 pdf_blocks.append(term_dict)
@@ -35,7 +36,8 @@ async def process_search_terms(search_term: SearchTermInput, pdf_with_ref):
                 term_dict = {
                     'title': search_term.title,
                     'reference': array[0],
-                    'value': array[2]
+                    'value': array[2],
+                    'page_num': array[4]
                 }
                 # Append the dictionary to the search_term_array list
                 pdf_blocks.append(term_dict)
